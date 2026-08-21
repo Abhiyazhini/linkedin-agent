@@ -5,33 +5,30 @@ An autonomous AI pipeline that translates natural-language hiring requirements i
 ---
 
 ## Architecture Overview
-User Natural Language Query ("Find 2 Senior Full Stack Engineers in Bangalore...")
-│
-▼
-┌──────────────────────────────────────────────┐
-│         Google Gemini 3.6 Flash               │
-│   (Planning, Tool Orchestration & Synthesis) │
-└──────────────┬───────────────────────────────┘
-│
-┌────────────────┴────────────────┐
-▼                                 ▼
-┌───────────────────────────┐   ┌───────────────────────────┐
-│       SerpAPI Tool        │   │   Scrapingdog / Fallback  │
-│  (Targeted Google Search  │──▶│  (Profile Data Enrichment │
-│    site:linkedin.com/in/) │   │     & Snippet Parsing)    │
-└───────────────────────────┘   └─────────────┬─────────────┘
-│
-▼
-┌───────────────────────────┐
-│     Pydantic Contract     │
-│   (Strict Data Validation)│
-└─────────────┬─────────────┘
-│
-▼
-┌───────────────────────────┐
-│   openpyxl Excel Writer   │
-│ (Formatted .xlsx Export)  │
-└───────────────────────────┘
+User query: "Find 2 Senior Full Stack Engineers in Bangalore..."
+        │
+        ▼
+┌─────────────────────────────┐
+│  Gemini (the agent's brain) │  ← decides what to do next, every turn
+└──────────────┬───────────────┘
+               │  (tool calls, chosen by the model)
+   ┌───────────┼────────────────┬──────────────────┐
+   ▼           ▼                ▼                  ▼
+search_      fetch_          finish_           (loop continues
+linkedin_    profile_        sourcing           until model
+profiles     data                               calls finish)
+   │           │
+   ▼           ▼
+SerpAPI    Scrapingdog → (fails?) → snippet fallback parser
+(Google       │
+ search)      ▼
+          Pydantic ProfileRecord (validated)
+               │
+               ▼
+        openpyxl Excel writer
+               │
+               ▼
+        Streamlit UI (live status log, table preview, download button)
  ---
 
 ## Tech Stack
