@@ -5,20 +5,33 @@ An autonomous AI pipeline that translates natural-language hiring requirements i
 ---
 
 ## Architecture Overview
-User query ("find 20 marketing directors at fintech startups in Bangalore")
-        │
-        ▼
- ┌─────────────────┐
- │   Agent (LLM)    │  ← plans steps, calls tools, reasons about results
- │  (Claude/GPT +   │
- │   tool calling)  │
- └────────┬─────────┘
-          │
-   ┌──────┼───────────────┬─────────────────┐
-   ▼      ▼               ▼                 ▼
- search  fetch_profile  dedupe/validate   save_to_excel
- tool    tool           tool              tool
-
+User Natural Language Query ("Find 2 Senior Full Stack Engineers in Bangalore...")
+│
+▼
+┌──────────────────────────────────────────────┐
+│         Google Gemini 3.6 Flash               │
+│   (Planning, Tool Orchestration & Synthesis) │
+└──────────────┬───────────────────────────────┘
+│
+┌────────────────┴────────────────┐
+▼                                 ▼
+┌───────────────────────────┐   ┌───────────────────────────┐
+│       SerpAPI Tool        │   │   Scrapingdog / Fallback  │
+│  (Targeted Google Search  │──▶│  (Profile Data Enrichment │
+│    site:linkedin.com/in/) │   │     & Snippet Parsing)    │
+└───────────────────────────┘   └─────────────┬─────────────┘
+│
+▼
+┌───────────────────────────┐
+│     Pydantic Contract     │
+│   (Strict Data Validation)│
+└─────────────┬─────────────┘
+│
+▼
+┌───────────────────────────┐
+│   openpyxl Excel Writer   │
+│ (Formatted .xlsx Export)  │
+└───────────────────────────┘
  ---
 
 ## Tech Stack
